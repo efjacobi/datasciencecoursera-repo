@@ -1,5 +1,6 @@
 # datasciencecoursera-repo
-# ProgrammingAssinment2 - R week 3 - Coursera
+
+# ProgrammingAssignment2 - R week 3 - Coursera
 
 # I have included the assignment README below:
 
