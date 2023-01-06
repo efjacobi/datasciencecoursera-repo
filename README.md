@@ -1,5 +1,6 @@
 # datasciencecoursera-repo
-For the Data Science Toolbox Coursera Course
+# ProgrammingAssinment2 - R week 3 - Coursera
+
 # I have included the assignment README below:
 
 ### Introduction
