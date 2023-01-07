@@ -66,6 +66,9 @@ cacheSolve <- function(X, ...) {
   X$setinverse(m)
   m
 }
+#  
+## The following "Test 1 code" and "Test 2 code" both exercise
+##  the 2 "cachematrix" functions to see if they work correctly.
 #
 # Test 1 code
 
