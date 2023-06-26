@@ -4,15 +4,7 @@ author: "efjacobi"
 date: "2023-06-19"
 output:
   html_document:
-    css: styles.css
----
-```{r}
-
-```
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+      css: styles.css 
 
 ## R Markdown
 
@@ -238,7 +230,7 @@ General structure: the number of observations and the number of variables in the
 
 1. subject_ID - integer (1 - 30)
 2. activity - factor with 6 levels (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING)
-3. thru 68. all time domain and frequency domain measurements  - numeric
+3. 3. thru 68. all time domain and frequency domain measurements  - numeric
 
 ### Units (of each measurement) of the 'cleaned' tidy dataset are:
 
@@ -260,59 +252,53 @@ In developing the 'FinalProjData' tidy dataset, we were assigned the goal to pre
 We transformed the original HAR dataset as follows:
 
    1. Merged the training and the test sets to create one data set.
-      (below gives information about how the merging was done; we merged the original training (X_train, y_train) sets and the          test (X_test, y_test) sets to create one dataframe).
-       We used the 'rbind' function to combine the individual dataframes by rows, e.g., for the HAR X_train and y_test                'features' data: "Featur_Dat <- rbind(Featur_Train, Featur_Test)".
+      (below gives information about how the merging was done; we merged the original training (X_train, y_train) sets and the test (X_test, y_test) sets to create one 
+       dataframe).
+       We used the 'rbind' function to combine the individual dataframes by rows, e.g., for the HAR X_train and y_test 'features' data:
+       "Featur_Dat <- rbind(Featur_Train, Featur_Test)".
        
        We merged columns to get the data frame data for all data ('subject', 'activities', 'features').
        We used the 'cbind' function to combine the individual dataframes by columns, e.g., 
        for the "Combin_Dat <- cbind(Subject_Dat, Activ_Dat)". Then formed a data frame 'InterimData' :
        "InterimData <- cbind(Combin_Dat, Featur_Dat)".
        
-       Note: at this point we had a data frame 'InterimData' which is an accumulation of all of the original HAR                        measurements as well as their calculated 'mean values' and 'standard deviation values'.
+       Note: at this point we had a data frame 'InterimData' which is an accumulation of all of the original HAR measurements as well as their calculated 'mean values' and 
+       'standard deviation values'.
 
    2. Then we extracted only the values on the mean and standard deviation for each measurement.
-      For the extraction of mean and standard deviation measurements, we 'Subset' names of Features by                                 measurements on the mean and standard deviation i.e., take the Names of Features with “mean()” 
-      or “std()”. 
+      For the extraction of mean and standard deviation measurements, we 'subset' names of Features by measurements on the mean and standard deviation i.e., take the Names 
+      of Features with “mean()” or “std()”. 
       
       Note: 1st we used the 'grep' function. The 'grep' function is used for pattern matching and
       searching within character strings or vectors. It returns the indices or elements that match a specified
       pattern; e.g.' "MyData_Featur_Nam <- colnam_Featur_Dat[grep("mean\\(\\)|std\\(\\)", colnam_Featur_Dat)]".
       
-       Then, In doing the above, in the 'MyData_featur_Nam' feature names, we are left with only those                                  measurement names which are described by both their mean AND standard deviation _which, I understand, is
-       what we were asked to do in the directions for this assignment._
+       Then, In doing the above, in the 'MyData_featur_Nam' feature names, we are left with only those measurement names which are described by both their mean AND 
+       standard deviation _which, I understand, is what we were asked to do in the directions for this assignment._
 
        NOW we are ready to 'subset' the dataframe InterimData by seleted names of Features;
        "MySelected_Nam <- c(as.character(MyData_Featur_Nam), "subject_ID", "activity" )"; 
        then 'subset InterimData' as "InterimData <- subset(InterimData, select = MySelected_Nam)".
        
-       By veiwing the subsetted 'InterimData data frame', we see we are left with only those Features which give
-       
-       the 'mean()' and 'std()' of the variables.
-
+       By veiwing the subsetted 'InterimData data frame', we see we are left with only those features which give the 'mean()' and 'std()' of the variables. 
 
    3. Gave descriptive activity names to name the activities in the data set; 
-      To elaborate on the specific mapping of original activity labels to the descriptive names used in the
-      cleaned dataset:  
-   
+      To elaborate on the specific mapping of original activity labels to the descriptive names used in the cleaned dataset:  
+
       To begin, we needed to 'read' descriptive activity names from “activity_labels.txt” USING
-      
       "activ_Labels <- read.table(file.path(path_HAR, "activity_labels.txt"),header = FALSE)".
       
       Then we: 1) created the mapping between activity codes and names using 'activ_Labels'; i.e.,
-      
-      "activity_mapping <- data.frame(code = 1:6, name = activ_Labels$V2)"
-      
-      and 2) factorized the 'activity' variable with descriptive names; i.e., 
-      
-           "InterimData$activity <- factor(InterimData$activity, levels = activity_mapping$code, labels =                                      activity_mapping$name)"
+      "activity_mapping <- data.frame(code = 1:6, name = activ_Labels$V2)" and
+       2) factorized the 'activity' variable with descriptive names; i.e., 
+           "InterimData$activity <- factor(InterimData$activity, levels = activity_mapping$code, labels = activity_mapping$name)"
 
           Then checked to see the proper 'activity labels';
             "head(InterimData$activity, 30)"                       
             ....and we see proper labels.....
 
    4.  Now, label the data set with 'descriptive' variable names.
-       Previously, the variables 'activity' and 'subject' and names of the activities have been 
-        labelled using descriptive names.
+       Previously, the variables 'activity' and 'subject' and names of the activities have been labelled using descriptive names.
 
        So, also, the names of the 'Features' were labeled using descriptive variable names.
          1st we looked at the 'InterimData Features' again to see what we needed to change: 
@@ -327,39 +313,34 @@ We transformed the original HAR dataset as follows:
             word in the InterimData data frame variable names: 
               e.g., we used "names(InterimData) <- gsub("^t", "time", names(InterimData))".
               
-   5. From the data set in step 4 (above), created a second, independent tidy data set with the 'average' of 
-      each variable for each activity and each subject: 
+   5. From the data set in step 4 (above), we created a second, independent tidy data set with the 'average' of each variable for each activity and each subject: 
       
-      I interpret this to mean, that we are taking the 'mean' of the Means and the 'mean' of the Standard Deviations -- So            below, a second, independent tidy data set is created::
-   
-  
-      In the below, 'FinalData_1' performs aggregation on the 'InterimData' dataframe using the 'aggregate' function from the         base R package.
+      I interpret this to mean, that we are taking the 'mean' of the Means and the 'mean' of the Standard Deviations; 
+      So below, a second, independent tidy data set is created:
+
+      In the below, 'FinalData_1' performs aggregation on the 'InterimData' dataframe using the 'aggregate' function from the base R package.
 
       The 'aggregate' function is used to aggregate data based on the grouping variables 'subject_ID + activity': 
-      This indicates that the aggregation should be performed based on the variables 'subject_ID' and 'activity'. It groups the       data by these variables.
+      This indicates that the aggregation should be performed based on the variables 'subject_ID' and 'activity'. It groups the data by these variables.
       
-      Furthermore, in the below, the 'mean' function is specified as the aggregation function. It calculates the mean value for       each variable within each combination of 'subject_ID' and 'activity'.
+      Furthermore, in the below, the 'mean' function is specified as the aggregation function. It calculates the mean value for each variable within each combination of 
+      'subject_ID' and 'activity';
       'aggregate' is from dplyr; "library(dplyr)"; 
       we form data frame "FinalData_1 <- aggregate(. ~subject_ID + activity, InterimData, mean)".
       
       We then 'ordered' Final Data_1 to form data frame; 
      "FinalData <- FinalData_1[order(FinalData_1*dollar sign*subject_ID, FinalData_1*dollar sign*activity), ]"
      
-      The 'order' function is used to sort vectors or data frames based on one or more variables.It returns a permutation that        rearranges the elements of the input object in ascending order by default, or based on a specified order. We see that we        have the data sorted by each subject (subject_ID) in ascending order. 
+      The 'order' function is used to sort vectors or data frames based on one or more variables. It returns a permutation that rearranges the elements of the input object 
+      in ascending order by default, (or based on a specified order). We see that we have the data sorted by each subject (subject_ID) in ascending order. 
       
       Finally, we stored 'FinalData' in my directory (as tidy data frame 'FinalProjData');
       
       "write.table(FinalData, "./data/FinalProjData.txt", row.name = FALSE)"
-      
-      
-      
+         
 **_FinalProjData_** is a 'data.frame' with 180 observations (rows) of  68 variables (columns). It is sorted by each subject's ID by each activity they performed (6 level factor ; WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING). Each row represents the mean (or average) of the 'means' and 'standard deviations' of time domain and frequency domain accelerometer and gryroscope measurements for each activity for each participant (subject).
-
-      
-      
-      
-      
-     FinalProjData is a 'data.frame' with 180 observations (rows) of  68 variables (columns). It is sorted by each subject's ID by each activity they performed (6 level factor ; WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING). Each row represents the mean (or average) of the 'means' and 'standard deviations' of time domain and frequency domain accelerometer and gryroscope measurements for each activity for each participant (subject).
+ 
+     FinalProjData is a 'data.frame' with 180 observations (rows) of  68 variables (columns). A copy of 'FinalProjData' is included in this repository.
 
       
       
