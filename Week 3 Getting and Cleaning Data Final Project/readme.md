@@ -1,14 +1,8 @@
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
-
-### README for 'run_analysis.R'
+## README for 'run_analysis.R'
 
 This repository contains an 'R' script file (`run_analysis.R`) that performs various data processing tasks. The script aims to download and process the Human Activity Recognition (HAR) dataset. The following sections provide an overview of the steps involved and the purpose of each section.
 
-## Getting Started
+### Getting Started
 
 To run the script, follow the steps outlined below:
 
@@ -16,7 +10,7 @@ To run the script, follow the steps outlined below:
 2. Unzip the downloaded file to extract the dataset.
 3. Run the script (`run_analysis.R`) in your preferred 'R' environment.
 
-## Data Processing Steps
+### Data Processing Steps
 
 ### Step 1: Get the Data
 
