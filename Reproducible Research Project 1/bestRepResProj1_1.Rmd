@@ -1,0 +1,680 @@
+---
+title: "Reproducible Research Project 1"
+author: "efjacobi"
+date: "2023-12-30"
+output: html_document
+---
+
+Choose CRAN mirror
+```{ r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos = c(CRAN = 'http://ftp.ussg.iu.edu/CRAN/'))
+```
+
+Clean Workspace
+```{r clean_workspace, echo=TRUE, message=FALSE, warning=FALSE}
+
+rm(list = ls())
+ls()
+
+```
+
+ R Markdown:
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+
+ Imbedding plots:(For this assignment, I will use echo = TRUE, because I need to expose my plotting codes.)
+ 
+## Begin Project 1 Assignment
+
+## Introduction
+
+This is an R Markdown document, created for the Coursera course "Reproducible Research", in completion of "Project/Peer Assessment 1". The assignment requires students to write an R markdown document using markdown and R programming techniques. There are 5 primary questions to be answered, dealing with processing and analyzing data. The dataset to be worked with is called "activity monitoring data".
+
+### The Data
+
+The data needed for our use is derived from a study where a single individual wore a "personal activity monitoring device". The individual wishes to remain anonymous.
+
+This assignment makes use of data from that personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of measurements from the individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+The data for this assignment was downloaded from the course web site:
+
+Dataset: 
+
+Title : 'Activity monitoring data'  [52K bytes] 
+
+The variables included in this dataset are:
+
+   * steps: Number of steps taking in a 5-minute interval (missing values are coded as NA) : integer type
+
+   * date: The date on which the measurement was taken in YYYY-MM-DD format : character type
+
+   * interval: Identifier for the 5-minute interval in which measurement was taken : integer type
+
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
+## Completing the Assignment
+
+In this 'Reproducible Research Project 1' we are going to utilize the features of the 
+packages 'ggplot2' and 'dplyr' extensively. There fore:
+
+```{r load_the_packages, echo=TRUE, message=FALSE, warning=FALSE}
+
+install.packages('dplyr')
+install.packages('ggplot2')
+install.packages('gridExtra')
+``` 
+
+ PART 1 -- LOADING and preprocessing the data Code for reading the dataset.
+  
+```{r data_loading_and_preprocessing, echo=TRUE, message=FALSE, warning=FALSE}
+
+## 1st, get the 'activity monitoring data' :
+act_mon_filename <- 'repdata_data_activity.zip'
+
+if(!file.exists(act_mon_filename)) {
+        fileURL <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip'
+        download.file(fileURL, act_mon_filename, method = "curl")
+        unzip(zipfile = act_mon_filename)
+}
+#
+## set the working directory
+#
+getwd()
+setwd('C:/Users/default user.DESKTOP-JJNHJML/Documents/data')
+getwd()
+if (!exists('amdata')) { 
+     amdata <- read.csv('./activity.csv')
+}
+# # see what we have in 'amdata'......
+head(amdata)
+str(amdata)
+#View(amdata)
+dim(amdata)
+
+
+## we're going to have to deal with TONS of NA's.....SO TRY::
+
+data <- amdata[!(is.na(amdata$steps)), ]
+head(data)
+str(data)
+dim(data)
+
+```
+
+CHUNK DONE
+
+
+  *we are now down to 15,264 rows, but some rows still have '0's.
+   that's OK, those are real '0's...*
+
+
+  GOTTA KEEP TRACK %%%%%%%%%%%%
+   'amdata' is the 'whole dataset or df' with ALL THE NA's !!!!
+      - it is a 'data.frame':	17568 obs. of  3 variables:
+   'data' is the 'dataset or df' with all the NA's removed !!!!!
+      - it is a 'data.frame':	15264 obs. of  3 variables
+   NOTE ALSO -- 'data' has '0's' ..... really are '0's'...
+   df 'amdata' and df 'data' have the same column 'names'!!!
+
+
+
+PART 2 OF THE PROJECT ASSIGNMENT.......
+
+  FIND -- MEAN NUMBER OF TOTAL STEPS PER DAY.....
+
+1. Calculate the total number of steps taken per day
+
+ To get the 'total number of steps per day', we group data for each day AND
+  then sum 'each days steps'; i.e., 'aggregate' can be used which does both...
+
+
+```{r Calculate Total Steps per Day, echo=TRUE, message=FALSE, warning=FALSE}
+
+##  activate dplyr
+library(dplyr)
+##
+## now use dplyr 'aggregate' to prepare for histogram...
+#
+stepsPerDay <- aggregate(steps ~ date, data, FUN = sum) 
+head(stepsPerDay)
+dim(stepsPerDay)
+str(stepsPerDay)
+
+```
+CHUNK DONE
+
+
+Now a histogram for 'stepsPerDay'...
+
+ 2. Make a'histogram' of 'stepsPerDay'...
+ 
+```{r create_histogram_stepsPerDay, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+# activate plotter
+library(ggplot2)
+
+# Close any open graphics devices
+graphics.off()
+
+# Create a histogram with blue vertical bars for 'stepsPerDay'...
+#
+## set up PNG graphics
+png(filename = './Plot_stepsPerDay.png', width = 600, height = 500)
+#
+Plot_stepsPerDay <- ggplot(data = stepsPerDay, aes(x = steps)) +
+              geom_histogram(fill = "blue", color = "black", bins = 30) +
+              labs(
+                title = "Histogram of Daily Steps using stepsPerDay",
+                x = "Total Steps per Day",
+                y = "Frequency"
+        )
+#
+#
+## display the panel plot...
+print(Plot_stepsPerDay)
+dev.off()
+##
+## we see that the most frequent occurrence of 
+## steps per day is around 10,000 steps which occurred
+##  in the data about 8 times as the histogram shows.
+
+```
+CHUNK DONE
+
+
+3. Calculate and report the 'mean' and 'median' of the total number of
+    steps per day....
+
+```{r get_mean_and_median, echo=TRUE, message=FALSE, warning=FALSE}
+
+### 1st see what we need to use...i.e., the 'steps' column
+##  w/i the 'stepsPerDay' dataframe.....
+
+head(stepsPerDay)
+
+# Calculate the mean and median
+mean_steps <- mean(stepsPerDay$steps)
+median_steps <- median(stepsPerDay$steps)
+
+# Report the results
+cat("Mean steps per day:", mean_steps, "\n")
+cat("Median steps per day:", median_steps, "\n")
+#
+## the 'mean steps per day' is = 10766.2
+## the 'median steps per day' is = 10,765
+
+```
+CHUNK DONE
+
+
+PART 3 OF THE PROJECT ASSIGNMENT.....
+  FIND -- AVG DAILY ACTIVITY PATTERN....
+
+ 1. Make a time series plot (i.e. type = 'l') of the 5-minute
+    interval (x-axis) and the average number of steps taken, averaged 
+    across all days (y-axis)...
+
+```{r create_steps_line_plot, echo=TRUE, message=FALSE, warning=FALSE}
+
+## 1st need to define steps in each interval from 'amdata'...
+## let's look at 'amdata' and 'data' again...
+head(amdata)
+head(data)
+dim(data)
+#View(amdata)
+##
+## Now I recall that 'data' has the 'NA's" cleaned out..
+##   so we will make use of it.....
+##
+# we must dig out no. of steps in each  5-min interval -- 
+##  the mean of steps...for each unique value of 'interval',
+##  we calculate the 'mean' of the 'steps' variable within that
+##  'interval'.....
+##
+## Again 'aggregate' will do what we need to the 'data' df to 
+#   get the 'means of steps' we need...
+#
+meanSteps <- aggregate(steps ~ interval, data, mean)
+head(meanSteps)
+dim(meanSteps)
+#
+## we see we indeed have an 'avg' for steps in each 5-min interval...now
+##  can plot...
+## set up PNG graphics
+
+# Close any open graphics devices
+graphics.off()
+
+png(filename = './Plot_meanSteps.png', width = 600, height = 500)
+#
+library(ggplot2)
+# Create the time series plot
+Plot_meanSteps <- ggplot(data = meanSteps, aes(x = interval, y = steps)) +
+        geom_line(color = "red") +
+        labs(
+                title = "Time Series Plot of Average Steps Taken per Interval",
+                x = "5-Minute Interval",
+                y = "Steps"
+        )
+##
+#dev.off()
+print(Plot_meanSteps)
+dev.off()
+
+## we see we have a peak of over 200 average steps in appoximately 
+##  the ~ 800th to 900th five minute interval... 
+
+```
+CHUNK DONE
+
+
+ 2. Which 5-minute interval, on average across all the days in the dataset, 
+     contains the maximum number of steps?
+
+```{r max_mean_steps, echo=TRUE, message=FALSE, warning=FALSE}
+
+##  we will use the 'which.max' function to find the maximum value in the 'steps'
+##   column of the 'meanSteps' dataframe....
+#
+max_steps <- max(meanSteps$steps)
+max_steps
+max_steps_interv <- meanSteps$interval[which.max(meanSteps$steps == max_steps)] 
+max_steps_interv
+cat('The 5-minute interval with the MAX steps is : ', max_steps_interv, '\n')
+cat('The MAX number of steps in that 5-minute interval is : ', max_steps, '\n')
+#
+##  OK ### looks good...the 'interval with max steps' is interval 835.
+##    the 'max steps' is 206.17 steps....
+
+```
+CHUNK DONE
+
+
+PART 4 OF THE PROJECT ASSIGNMENT.....
+          IMPUTING MISSING VALUES....
+
+There are a number of days/intervals where there are missing values 
+  (coded as NA). The presence of missing days may introduce bias into 
+   some calculations or summaries of the data.
+
+  1. Therefore; Calculate and report the total number of missing values 
+      in the dataset (i.e. the total number of rows with NAs)...
+       also need to find if there are NA's in the 'date' and 'interval' cols...
+
+```{r missing_values, echo=TRUE, message=FALSE, warning=FALSE}
+# Calculate and report the total number of missing values in each column
+missing_steps <- sum(is.na(amdata$steps))
+missing_date <- sum(is.na(amdata$date))
+missing_interval <- sum(is.na(amdata$interval))
+
+# Report the results
+cat("Total missing values in 'steps' column:", missing_steps, "\n")
+cat("Total missing values in 'date' column:", missing_date, "\n")
+cat("Total missing values in 'interval' column:", missing_interval, "\n")
+#
+## we see we have '2,304' missing values in 'steps';
+## we see we have '0' missing values in 'date';
+## we see we have '0' missing values in 'interval';
+```
+CHUNK DONE
+
+
+  2. Devise a strategy for filling in all of the missing values in
+      the dataset. We will use the mean for that 5-minute interval as
+       a 'fill-in' for the missing values. Recall, we have 2,304 missing
+        values in the 'steps' column.
+
+
+     The imputing strategy will be devised to replace all of these
+      missing 'steps' values with usable numeric measurements. To do so
+      replace each missing 'steps' value with the mean 'steps' value 
+      for the same interval averaged across all days.
+
+```{r fill in_missing_values, echo=TRUE, message=FALSE, warning=FALSE}
+
+# Load necessary libraries if not already loaded
+library(dplyr)
+
+## eventually COMPARE 'imputedData' to 'amdata'.....!!!!!!!!!!
+#
+## but 1st, From PART 1 of the assignment above.....
+#
+##  GOTTA KEEP TRACK %%%%%%%%%%%%
+##   'amdata' is the 'whole dataset or df' with ALL THE NA's !!!!
+##      - is a 'data.frame':	17568 obs. of  3 variables:
+##   'data' is the 'dataset or df' with all the NA's removed !!!!!
+##      - is a 'data.frame':	15264 obs. of  3 variables
+##    NOTE ALSO -- 'data' has '0's' but they're real .......
+```
+CHUNK DONE
+
+
+   3. CREATE A NEW dataset - we'll call it 'imputedData' that is 'equal'
+        to 'amdata', but has NA's replaced by 'numbers' ...
+        We'll chose to use 'mean's' of the total number of steps taken per day...
+
+```{r create_imputed_data, echo=TRUE, message=FALSE, warning=FALSE}        
+###  use 'aggregate' from dplyr -- Again...
+#
+meanSteps <- aggregate(steps ~ interval, data, mean)
+#
+head(meanSteps)
+dim(meanSteps)  ## 'meanSteps' is a 288 x 2 with columns named 
+##                      'interval' and 'steps'....
+#
+# Create a copy of the initial data
+imputedData <- amdata
+#
+dim(imputedData)
+#
+## 
+# Iterate through each row of imputedData
+for (x in 1:nrow(imputedData)) {
+        # Check if the value in the first column is missing (NA)
+        if (is.na(imputedData[x, 1] == TRUE)) {
+                # Find the corresponding interval value in meanSteps
+                interval_value <- imputedData[x, 3]
+                
+                # Find the mean value in meanSteps where interval matches
+                mean_value <- meanSteps$steps[meanSteps$interval == interval_value]
+                
+                # Replace the missing value in imputedData with the calculated mean
+                imputedData[x, 1] <- mean_value
+        }
+}
+
+# Display the first few rows of imputedData
+head(imputedData)
+str(imputedData)    ### and let's compare to our 'old amdata'...
+str(amdata)
+#
+# In the above code:
+##  a.	We create a copy of the initial data frame, 'amData', and store it 
+##      in 'imputedData'.
+##  b.	We use a loop to iterate through each row of 'imputedData'.
+##  c.	For each row, we check if the value in the first column is missing (NA).
+##  d.	If it is missing, we extract the corresponding interval value from the 
+##      third column.
+##  e.	We then find the mean value from the 'meanStepsInterval' data frame where 
+##       the 'interval' matches the extracted interval value.
+##  f.	Finally, we replace the missing value in 'imputedData' with the 
+##      calculated mean value.
+#
+## This step-by-step approach makes the imputation process more intuitive 
+##  and easier to follow.
+###
+head(amdata)
+head(imputedData)
+str(amdata)
+str(imputedData)
+dim(amdata)
+dim(imputedData)
+##  Comparing 'amdata' with 'imputedData' - look's like exactly what we want - 
+##   structures are the same except for the NA's are now replaced by the desired
+##    'means'....
+
+```
+CHUNK DONE
+
+  4.	Make a histogram of the total number of steps taken each day 
+      and Calculate and report the _mean_ and _median_ total number of steps
+      taken per day. Do these values differ from the estimates from the 
+      first part of the assignment? What is the impact of imputing missing 
+      data on the estimates of the total daily number of steps?
+
+      We choose to also do a 'panel plot' comparing the 'First Part' histogram
+      to the histogram of the 'imputedData'....
+
+```{r create_imputed_steps_histogram, echo=TRUE, message=FALSE, warning=FALSE}
+
+# Load necessary libraries if not already loaded
+
+library(ggplot2)
+## Now a histogram for 'stepsPerDay'...from 1st PART...
+#
+# Close any open graphics devices
+graphics.off()
+#
+## set up PNG graphics
+png(filename = './panel_plot.png', width = 600, height = 700)
+#
+# Create a histogram with blue vertical bars for 'stepsPerDay'...from 1st PART...
+# 
+Plot_1 <- ggplot(data = stepsPerDay, aes(x = steps)) +
+        geom_histogram(fill = "blue", color = "black", bins = 30) +
+        labs(
+                title = "Histogram of Daily Steps using stepsPerDay (1st Part)",
+                x = "Total Steps per Day",
+                y = "Frequency"
+        )
+#
+head(imputedData)
+#
+stepsPerDayImputed <- aggregate(steps ~ date, imputedData, FUN = sum) 
+head(stepsPerDayImputed)
+dim(stepsPerDayImputed)
+
+# Create a histogram with orange vertical bars for 'stepsPerDayImputed'...
+#
+Plot_2 <- ggplot(data = stepsPerDayImputed, aes(x = steps)) +
+        geom_histogram(fill = "orange", color = "black", bins = 30) +
+        labs(
+                title = "Histogram of Daily Steps using imputedStepsPerDay",
+                x = "Total Steps per Day",
+                y = "Frequency"
+        )
+#
+#
+## arrange the histogram(s) as a panel plot...
+# 
+library(gridExtra)
+panel_plot <- grid.arrange(Plot_1, Plot_2, ncol = 1)
+#
+## display the panel plot...
+#
+print(panel_plot)  
+dev.off()
+
+ #  We see quite a change in the 'histogram' from the 1st PART.
+ #    - that being in the frequency at ~ 11,000 steps/day, i.e., 
+ #  the frequency @ 11,000 (steps) increases to almost over 12 from
+ #  about 4 in the 1st PART...
+
+ # WE shall also TRY Plot_2 using 15 bins (instead of 30 bins) to see what happens to 
+ #  the 'imputedStepsPerDay'...
+ #  i.e., Create a histogram with orange vertical bars for 'stepsPerDayImputed'...
+#    WITH 15 BINS intead of 30 BINS.....
+#
+# Close any open graphics devices
+graphics.off()
+#
+## set up PNG graphics
+png(filename = './Plot_2A.png', width = 600, height = 700)
+#
+Plot_2A <- ggplot(data = stepsPerDayImputed, aes(x = steps)) +
+        geom_histogram(fill = "orange", color = "black", bins = 15) +
+        labs(
+                title = "15 bin Histogram of Daily Steps using imputedStepsPerDay",
+                x = "Total Steps per Day",
+                y = "Frequency"
+        )
+#
+#
+print(Plot_2A)
+dev.off()
+#
+##  We see the frequency height drop at ~ 11,000 steps per day because the data has
+##   been combined into fewer bins....
+
+```
+CHUNK DONE
+
+
+  now calculate 'mean' and 'median' total number of 'steps per day'...
+    calculate the mean and median
+
+```{r mean_median_steps_imputed, echo=TRUE, message=FALSE, warning=FALSE}
+
+mean_steps_impu <- mean(stepsPerDayImputed$steps)
+median_steps_impu <- median(stepsPerDayImputed$steps)
+
+# Report the results
+cat("Imputed Mean steps per day:", mean_steps_impu, "\n")
+cat("Imputed Median steps per day:", median_steps_impu, "\n")
+#
+## the 'imputed mean steps per day' is = 10766.2
+## the 'imputed median steps per day' is = 10,766.2
+#
+##  Compare above 'mean' and 'median' to 'the estimates from the first
+##   part of the assignemnt'............
+#
+## 1st PART 'mean steps per day' is = 10,766.2
+## 1st PART 'median steps per day' is = 10,766.2
+##
+###  'mean and 'median' changed very little or not at all...
+
+```
+CHUNK DONE
+
+
+PART 5 OF THE PROJECT ASSIGNMENT.....
+
+  _Are there differences in activity patterns between weekdays
+   and weekends?_
+
+  For this part the 'weekdays()' function will be use here.
+  Use the dataset with the filled-in missing values for this part,
+  i.e., we will use the 'imputedData' df....
+
+  1.	Create a new factor variable in the dataset with two levels –
+      “weekday” and “weekend” indicating whether a given date is a 
+       weekday or weekend day.
+
+```{r imputed_weekdays_weekends, echo=TRUE, message=FALSE, warning=FALSE}
+
+### Load necessary libraries if not already loaded
+
+library(dplyr)
+#
+## We create a new factor variable 'day_type' to indicate weekday
+##   or weekend
+#
+imputedDataDays <- imputedData %>%
+        mutate(day_type = ifelse(weekdays(as.Date(date)) %in% 
+                        c("Saturday", "Sunday"), "weekend", "weekday"))
+#
+head(imputedData)
+head(imputedDataDays)
+##   'day_type' will now contain 'weekday' for weekdays and 'weekend' 
+##     for weekend days
+##
+#    In the code above:
+##  a.	We use the mutate() function from the dplyr package to 
+##       add a new column named 'day_type' to the 'imputedData' dataframe.
+##  b.	Inside the mutate() function, we use the ifelse() function to 
+##       classify each date as either 'weekday' or 'weekend' based on the 
+##       day of the week determined by the 'weekdays(as.Date(date))' function. 
+##       If the day is 'Saturday' or 'Sunday,' it's considered a 'weekend'; 
+##       otherwise, it's considered a 'weekday'.
+#
+##   After running this code, the 'imputedData' dataframe will have a 
+##   new factor variable 'day_type' that indicates whether each date is
+##   a weekday or a weekend data.
+#
+## look at it again......
+head(imputedDataDays)
+str(imputedDataDays)
+#View(imputedDataDays)
+dim(imputedDataDays)
+
+```
+CHUNK DONE
+
+
+ 2. Make a panel --
+    Make a panel plot containing a time series plot 
+     (i.e. type = 'l') of the 5-minute interval (x-axis) 
+     and the average number of steps taken, averaged across all weekday 
+     days or weekend days (y-axis). 
+
+    To create the assigned panel plot, we need to to 'subset' the
+     'new imputedData' df into separate df's for 'weekdays' and 'weekends'
+      and then create the plots for the panel plot.
+
+```{r line_plot_weekdays_weekends, echo=TRUE, message=FALSE, warning=FALSE}
+# Load necessary libraries if not already loaded
+
+library(ggplot2)
+library(gridExtra)
+
+# Convert 'date' column to Date class
+imputedData$date <- as.Date(imputedData$date) ## don't know if we actually need to do                                                     ## this because origin dataset format is OK...
+
+## WE NEED TO 1ST 'aggregate' the WEEKENDS and WEEKDAYS dfs!!!
+
+# Create separate dataframes for weekdays and weekends
+#
+weekdays_data <- imputedDataDays %>% filter(day_type == 'weekday')
+head(weekdays_data)
+dim(weekdays_data)
+#View(weekdays_data)
+weekends_data <- imputedDataDays %>% filter(day_type == 'weekend')
+head(weekends_data)
+dim(weekends_data)
+#View(weekends_data)
+#
+## now we need to 'aggregate' ...........
+weekdays_dataSteps <- aggregate(steps ~ interval, weekdays_data, mean)
+head(weekdays_dataSteps)
+dim(weekdays_dataSteps)  #### we (need to) see a 288 x 2 df...
+#
+weekends_dataSteps <- aggregate(steps ~ interval, weekends_data, mean)
+head(weekends_dataSteps)
+dim(weekends_dataSteps)  #### again we see a 288 x 2 df...
+#
+# Create time series plots for weekdays and weekends
+#
+## 1st set up PNG graphics
+#
+# Close any open graphics devices
+graphics.off()
+#
+png(filename = './panel_plot_final.png', width = 600, height = 700)
+#
+##
+weekday_plot <- ggplot(data = weekdays_dataSteps, aes(x = interval, y = steps)) +
+        geom_line(color = "blue") +
+        labs(
+                title = "Weekday Average Steps",
+                x = "5-Minute Interval",
+                y = "Average Steps"
+        )
+
+weekend_plot <- ggplot(data = weekends_dataSteps, aes(x = interval, y = steps)) +
+        geom_line(color = "red") +
+        labs(
+                title = "Weekend Average Steps",
+                x = "5-Minute Interval",
+                y = "Average Steps"
+        )
+
+# Arrange the plots as a panel (as a column)
+#
+panel_plot_final <- grid.arrange(weekday_plot, weekend_plot, ncol = 1)
+
+# Display the panel plot
+print(panel_plot_final)
+dev.off()
+#
+##  On 'weekdays' we see we have a peak of about 225 steps in the 800th interval (appoximatey) 
+##  On 'weekends' we have 3 'major peaks' at around 150 steps in the 900th, 1200th, 
+##         and 1600th intervals (approximately)........
+#
+####  We HAVE IT !!! ..............This completes the
+####   Course Project 1............
+```
+
+CHUNK DONE
